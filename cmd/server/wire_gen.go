@@ -9,9 +9,6 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/wire"
-	"github.com/renfy96/yy-layout-v1/internal/application/admin/service"
-	"github.com/renfy96/yy-layout-v1/internal/bc/admin/application"
-	repository2 "github.com/renfy96/yy-layout-v1/internal/bc/admin/infrastructure/repository"
 	"github.com/renfy96/yy-layout-v1/internal/repository"
 	"github.com/renfy96/yy-layout-v1/internal/router"
 	"github.com/renfy96/yy-layout-v1/pkg/log"
@@ -21,12 +18,8 @@ import (
 // Injectors from wire.go:
 
 func newApp(viperViper *viper.Viper, logger *log.Logger) (*gin.Engine, func(), error) {
-	db := repository.NewDb(viperViper)
-	adminRepository := repository2.NewAdminRepository(db)
-	queryService := application.NewQueryService(adminRepository)
-	commandService := application.NewCommandService(adminRepository)
-	serviceService := service.NewService(queryService, commandService)
-	engine := router.NewServerHTTP(logger, serviceService)
+	_ = repository.NewDb(viperViper)
+	engine := router.NewServerHTTP(logger)
 	return engine, func() {
 	}, nil
 }
@@ -34,12 +27,5 @@ func newApp(viperViper *viper.Viper, logger *log.Logger) (*gin.Engine, func(), e
 // wire.go:
 
 // RepositorySet 仓储
-var RepositorySet = wire.NewSet(repository.NewDb, repository2.NewAdminRepository)
-
-// 请求服务
-var repoSvc = wire.NewSet(application.NewCommandService, application.NewQueryService)
-
-// SvcSet 业务服务
-var SvcSet = wire.NewSet(service.NewService)
 
 var ServerSet = wire.NewSet(router.NewServerHTTP)
